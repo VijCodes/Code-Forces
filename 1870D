@@ -1,0 +1,38 @@
+from functools import lru_cache
+from itertools import permutations, combinations, product, accumulate, cycle, chain
+from collections import defaultdict,deque, Counter
+from bisect import bisect,bisect_left,bisect_right
+from math import sqrt,log10,log2,gcd,inf
+ 
+##### ***** Frequently Used Code ***** #######
+# list(map(int,input().split()))
+# int(input())
+t = int(input())
+for j in range(t):
+    n = int(input())
+    c = list(map(int,input().split()))
+    k = int(input())
+    dp = [-1]*n # contains -1 if there is no element less than or equal to this number to the right
+    stack = []
+    for i in reversed(range(n)):
+        while stack and c[stack[-1]]>c[i]:
+            stack.pop()
+        if stack:
+            dp[i] = stack[-1]
+        stack.append(i)
+    # now we know if some element is less than equal in right
+    pre = [0]*n #this is used calculate the final result, tracks max coins in res to left
+    sub = 0 # this is keep track of lost coins
+    past = inf
+    for i in range(n):
+        if dp[i] == -1:
+            div = k//(c[i]-sub) #number of time we can buy this index #c[i]-sub are additional coins that we can take out from past purchases
+            pre[i] = min(div,past) #update pre accordingly
+            k-=pre[i]*(c[i]-sub) # remaining coins
+            sub = c[i] # we increase the lost coins
+            past = pre[i] # we can only replace last purchases time
+        if not k:
+            break
+    res = list(accumulate(pre[::-1],func = max))[::-1]
+   
+    print(' '.join(map(str,res)))

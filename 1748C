@@ -1,0 +1,31 @@
+from functools import lru_cache
+from itertools import permutations, combinations, product, accumulate, cycle, chain
+from collections import defaultdict,deque, Counter
+from bisect import bisect,bisect_left,bisect_right
+from math import sqrt,log10,log2,gcd,inf
+#from sortedcontainers import SortedList
+from heapq import heappush,heapify,heappushpop,heappop,_heapify_max,heapreplace
+
+##### ***** Frequently Used Code ***** #######
+# list(map(int,input().split()))
+# int(input())
+for t in range(int(input())):
+    n = int(input())
+    a = list(map(int,input().split()))
+    #if t==257:
+    #   print(a)
+    preSum = list(accumulate(a))
+    counter = Counter()
+    res = 0
+    summ = 0
+    maxi = 0
+    for i in reversed(range(n)):
+        counter[preSum[i]]+=1
+        maxi = max(maxi,counter[preSum[i]])
+        if a[i] == 0:
+            res += maxi
+            counter = Counter()
+            maxi = 0
+    print(res+counter[0])
+
+#expected 2 found 1, 258 test case

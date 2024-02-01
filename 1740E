@@ -1,0 +1,35 @@
+# **** Packages **** #
+ 
+from functools import lru_cache
+from itertools import permutations, combinations, product, accumulate, cycle, chain
+from collections import defaultdict,deque, Counter
+from bisect import bisect,bisect_left,bisect_right
+from math import sqrt,log10,log2,gcd,inf
+ 
+##### ***** Frequently Used Code ***** #######
+# list(map(int,input().split()))
+# int(input())
+n = int(input()) 
+hang = list(map(int,input().split()))
+adj = defaultdict(list)
+for i in range(n-1):
+    adj[hang[i]].append(i+2)
+stack1 = [1]
+stack2 = []
+while stack1:
+    node = stack1.pop()
+    stack2.append(node)
+    for child in adj[node]:
+        stack1.append(child)
+res = 0
+scores = defaultdict(lambda:[1,0])
+while stack2:
+    node = stack2.pop()
+    res = max(scores[node])
+    if node !=1:
+        scores[hang[node-2]][0] = max(scores[node][0]+1,scores[hang[node-2]][0])
+        scores[hang[node-2]][1] = scores[hang[node-2]][1]+max(scores[node])
+print(res)
+
+
+ 

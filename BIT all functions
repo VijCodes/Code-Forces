@@ -1,0 +1,146 @@
+## BIT functions template
+
+class BinaryIndexedTree:
+    def __init__(self, n):
+        self.n = n
+        self.BIT1 = [0] * (n + 1)
+        self.BIT2 = [0] * (n + 1)
+
+    def update(self, BIT, index, val):
+        i = index + 1
+        while i <= self.n:
+            BIT[i] += val
+            i += i & -i
+
+    def range_update_query(self, val, l, r):
+        self.update(self.BIT1, l, val)
+        self.update(self.BIT1, r + 1, -val)
+        self.update(self.BIT2, l, val * (l - 1))
+        self.update(self.BIT2, r + 1, -val * r)
+
+    def get_sum(self, BIT, index):
+        sum = 0
+        i = index + 1
+        while i > 0:
+            sum += BIT[i]
+            i -= i & -i
+        return sum
+
+    def range_sum_query(self, l, r):
+        sum1 = (self.get_sum(self.BIT1, r) * r) - self.get_sum(self.BIT2, r)
+        sum2 = (self.get_sum(self.BIT1, l - 1) * (l - 1)) - self.get_sum(self.BIT2, l - 1)
+        return sum1 - sum2
+
+
+# Main Function
+
+if __name__ == "__main__":
+    n = 6
+    bit = BinaryIndexedTree(n)
+
+    # First Query: Range Update Query : Add 4 to all the elements from [0,3]
+    l, r, val = 0, 3, 4
+    bit.range_update_query(val, l, r)
+
+    # Second Query: Range Update Query : Add 6 to all the elements from [1,4]
+    l, r, val = 1, 4, 6
+    bit.range_update_query(val, l, r)
+
+    # Third Query: Range Query : Find sum of all the elements in the array from [0,5]
+    l, r = 0, 5
+    sum = bit.range_sum_query(l, r)
+    print(f"Sum of elements from [{l},{r}] is {sum}")
+
+
+# get lower version
+
+class BinaryIndexTree:
+    def __init__(self, n):
+        self.n = n
+        self.logn = int(log2(n)) + 1
+        self.data = [0] * (n + 1)
+
+    def add_delta(self, i, delta):
+        i += 1
+        while i <= self.n:
+            self.data[i] += delta
+            i += i & -i
+    # lowest index with prefix sum>=v
+    def get_lower(self, maxSum):
+        sum = 0
+        pos = 0
+        for i in range(self.logn, -1, -1):
+            if pos + (1 << i) < self.n and sum + self.data[pos + (1 << i)] < maxSum:
+                sum += self.data[pos + (1 << i)]
+                pos += (1 << i)
+        if pos < self.n:
+            pos += 1
+        return pos - 1 
+    
+## segment tree
+
+class SegmentTree:
+    def __init__(self, n):
+        self.n = 1
+        while self.n < n:
+            self.n *= 2
+        self.segtree = [0] * (2 * self.n)
+        self.lazy = [False] * (2 * self.n)
+
+    def p_update(self, node, l, r, index, val):
+        if r - l == 1:
+            self.segtree[node] = val
+            return
+        
+        mid = (l + r) // 2
+        if index < mid:
+            self.p_update(2 * node + 1, l, mid, index, val)
+        else:
+            self.p_update(2 * node + 2, mid, r, index, val)
+        
+        self.segtree[node] = self.segtree[2 * node + 1] + self.segtree[2 * node + 2]
+
+    def propagate(self, node, l, r):
+        if not self.lazy[node]:
+            return
+        
+        if r - l == 1:
+            self.segtree[node] = 1 - self.segtree[node]
+        else:
+            self.segtree[node] = (r - l) - self.segtree[node]
+            self.lazy[2 * node + 1] = not self.lazy[2 * node + 1]
+            self.lazy[2 * node + 2] = not self.lazy[2 * node + 2]
+        
+        self.lazy[node] = False
+
+    def r_update(self, node, l, r, i, j):
+        self.propagate(node, l, r)
+        
+        if r <= i or j <= l:
+            return
+        if i <= l and r <= j:
+            self.lazy[node] = True
+            self.propagate(node, l, r)
+            return
+        
+        mid = (l + r) // 2
+        self.r_update(2 * node + 1, l, mid, i, j)
+        self.r_update(2 * node + 2, mid, r, i, j)
+        
+        self.segtree[node] = self.segtree[2 * node + 1] + self.segtree[2 * node + 2]
+
+    def query(self, node, l, r, i, j):
+        self.propagate(node, l, r)
+        
+        if r <= i or j <= l:
+            return 0
+        if i <= l and r <= j:
+            return self.segtree[node]
+        
+        mid = (l + r) // 2
+        return self.query(2 * node + 1, l, mid, i, j) + self.query(2 * node + 2, mid, r, i, j)
+
+
+    
+
+
